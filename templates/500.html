@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - 500 Server Error{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-6 text-center">
+        <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+        <h1 class="display-1 fw-bold text-danger mb-0">500</h1>
+        <h3 class="mb-4 text-white">System Malfunction</h3>
+        <p class="text-muted-custom lead mb-5">An internal error occurred in the CyberArena mainframe. Our engineers have been notified and are working on a fix.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-cyber px-4"><i class="fas fa-home me-2"></i>Return to Base</a>
+    </div>
+</div>
+{% endblock %}

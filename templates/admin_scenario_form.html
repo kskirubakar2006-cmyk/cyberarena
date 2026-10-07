@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - Add Scenario{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0">Add <span class="text-danger">Scenario</span></h2>
+        <a href="{{ url_for('admin.scenarios') }}" class="text-muted-custom small"><i class="fas fa-arrow-left me-1"></i> Back to Scenarios</a>
+    </div>
+</div>
+
+<form method="post" class="glass-card p-4">
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label for="title" class="form-label">Title</label>
+            <input id="title" name="title" class="form-control" maxlength="200" required value="{{ form_data.get('title', '') if form_data else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label for="category" class="form-label">Category</label>
+            <select id="category" name="category" class="form-select" required>
+                <option value="">Select category</option>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if form_data and form_data.get('category') == category %}selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="difficulty" class="form-label">Difficulty</label>
+            <select id="difficulty" name="difficulty" class="form-select" required>
+                <option value="">Select difficulty</option>
+                {% for difficulty in difficulties %}
+                <option value="{{ difficulty }}" {% if form_data and form_data.get('difficulty') == difficulty %}selected{% endif %}>{{ difficulty }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="xp_reward" class="form-label">XP Reward</label>
+            <input id="xp_reward" name="xp_reward" type="number" class="form-control" min="0" step="1" required value="{{ form_data.get('xp_reward', '100') if form_data else '100' }}">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input id="active" name="active" type="checkbox" class="form-check-input" {% if not form_data or 'active' in form_data %}checked{% endif %}>
+                <label for="active" class="form-check-label">Active in Arena</label>
+            </div>
+        </div>
+        <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="2" required>{{ form_data.get('description', '') if form_data else '' }}</textarea>
+        </div>
+        <div class="col-12">
+            <label for="scenario_text" class="form-label">Scenario Question / Situation</label>
+            <textarea id="scenario_text" name="scenario_text" class="form-control" rows="4" required>{{ form_data.get('scenario_text', '') if form_data else '' }}</textarea>
+        </div>
+        <div class="col-md-6">
+            <label for="threat_type" class="form-label">Threat Type</label>
+            <input id="threat_type" name="threat_type" class="form-control" required value="{{ form_data.get('threat_type', '') if form_data else '' }}">
+        </div>
+        <div class="col-md-6">
+            <label for="security_tip" class="form-label">Security Tip</label>
+            <input id="security_tip" name="security_tip" class="form-control" required value="{{ form_data.get('security_tip', '') if form_data else '' }}">
+        </div>
+        <div class="col-12">
+            <label for="explanation" class="form-label">Explanation</label>
+            <textarea id="explanation" name="explanation" class="form-control" rows="3" required>{{ form_data.get('explanation', '') if form_data else '' }}</textarea>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h4 class="mb-0">Answer Options</h4>
+        <button id="addOption" type="button" class="btn btn-cyber-outline"><i class="fas fa-plus me-2"></i>Add Option</button>
+    </div>
+    <div id="optionsContainer" class="row g-3">
+        {% set option_texts = form_data.getlist('option_text') if form_data else ['', ''] %}
+        {% set option_explanations = form_data.getlist('option_explanation') if form_data else [] %}
+        {% for option_text in option_texts %}
+        <div class="col-md-6 option-row">
+            <div class="glass-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label mb-0">Option {{ loop.index }}</label>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-option" aria-label="Remove option">Remove</button>
+                </div>
+                <input name="option_text" class="form-control mb-2" maxlength="500" required value="{{ option_text }}" placeholder="Answer text">
+                <textarea name="option_explanation" class="form-control mb-2" rows="2" placeholder="Optional explanation">{{ option_explanations[loop.index0] if loop.index0 < option_explanations|length else '' }}</textarea>
+                <div class="form-check">
+                    <input name="correct_option" type="radio" class="form-check-input correct-option" required value="{{ loop.index0 }}" {% if form_data and form_data.get('correct_option') == loop.index0|string %}checked{% endif %}>
+                    <label class="form-check-label">Correct answer</label>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-cyber"><i class="fas fa-save me-2"></i>Create Scenario</button>
+        <a href="{{ url_for('admin.scenarios') }}" class="btn btn-cyber-outline">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const optionsContainer = document.getElementById('optionsContainer');
+
+    function refreshOptions() {
+        const rows = [...optionsContainer.querySelectorAll('.option-row')];
+        rows.forEach((row, index) => {
+            row.querySelector('.form-label').textContent = `Option ${index + 1}`;
+            row.querySelector('.correct-option').value = index;
+            row.querySelector('.remove-option').disabled = rows.length <= 2;
+        });
+    }
+
+    document.getElementById('addOption').addEventListener('click', () => {
+        const column = document.createElement('div');
+        column.className = 'col-md-6 option-row';
+        column.innerHTML = '<div class="glass-card p-3 h-100"><div class="d-flex justify-content-between align-items-center mb-2"><label class="form-label mb-0"></label><button type="button" class="btn btn-sm btn-outline-danger remove-option" aria-label="Remove option">Remove</button></div><input name="option_text" class="form-control mb-2" maxlength="500" required placeholder="Answer text"><textarea name="option_explanation" class="form-control mb-2" rows="2" placeholder="Optional explanation"></textarea><div class="form-check"><input name="correct_option" type="radio" class="form-check-input correct-option" required><label class="form-check-label">Correct answer</label></div></div>';
+        optionsContainer.appendChild(column);
+        refreshOptions();
+    });
+
+    optionsContainer.addEventListener('click', event => {
+        if (event.target.closest('.remove-option') && optionsContainer.querySelectorAll('.option-row').length > 2) {
+            event.target.closest('.option-row').remove();
+            refreshOptions();
+        }
+    });
+
+    refreshOptions();
+</script>
+{% endblock %}

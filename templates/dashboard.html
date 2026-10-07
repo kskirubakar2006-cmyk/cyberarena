@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0">Welcome back, <span class="text-cyan">{{ user.name }}</span></h2>
+        <p class="text-muted-custom">Here is your training progress overview.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Level & XP Card -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 position-relative overflow-hidden">
+            <div class="position-absolute top-0 end-0 p-3 opacity-25">
+                <i class="fas fa-shield-halved fa-4x text-cyan"></i>
+            </div>
+            <h5 class="text-muted-custom text-uppercase small fw-bold">Current Rank</h5>
+            <h3 class="fw-bold text-white mb-0">Level {{ user.level }}</h3>
+            {% set levels = ['Cyber Rookie', 'Cyber Explorer', 'Threat Hunter', 'Security Defender', 'Cyber Guardian', 'Cyber Sentinel', 'Cyber Champion'] %}
+            {% set rank_name = levels[user.level - 1] if user.level <= 7 else 'Cyber Legend' %}
+            <p class="text-cyan mb-4">{{ rank_name }}</p>
+            
+            <div class="d-flex justify-content-between text-muted-custom small mb-1">
+                <span>XP Progress</span>
+                <span>{{ user.xp }} XP</span>
+            </div>
+            <div class="progress rounded-pill mb-2">
+                <!-- simple calculation for progress bar width -->
+                <div class="progress-bar bg-cyan" role="progressbar" style="width: {{ (user.xp % 1000) / 10 }}%;"></div>
+            </div>
+            <small class="text-muted-custom">Total Score: {{ user.total_score }}</small>
+        </div>
+    </div>
+    
+    <!-- Streak Card -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 text-center d-flex flex-column justify-content-center">
+            <h5 class="text-muted-custom text-uppercase small fw-bold mb-3">Current Streak</h5>
+            <div class="d-flex justify-content-center align-items-center mb-2">
+                <i class="fas fa-fire fa-3x {% if user.streak > 0 %}text-warning{% else %}text-muted{% endif %} me-3"></i>
+                <h2 class="display-4 fw-bold mb-0">{{ user.streak }}</h2>
+            </div>
+            <p class="text-muted-custom mb-0">Days in a row</p>
+        </div>
+    </div>
+
+    <!-- Recommended Challenge Card -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="text-muted-custom text-uppercase small fw-bold mb-3">Recommended For You</h5>
+            {% if recommended_challenge %}
+                <div class="d-flex align-items-start mb-3">
+                    <div class="bg-dark rounded p-2 me-3 border border-cyan text-cyan">
+                        <i class="fas fa-crosshairs fa-fw"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 text-white">{{ recommended_challenge.title }}</h6>
+                        <span class="badge bg-secondary">{{ recommended_challenge.category }}</span>
+                        <span class="badge {% if recommended_challenge.difficulty == 'Easy' %}bg-success{% elif recommended_challenge.difficulty == 'Medium' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ recommended_challenge.difficulty }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('challenges.challenge', scenario_id=recommended_challenge.id) }}" class="btn btn-cyber w-100">Start Challenge</a>
+            {% else %}
+                <p class="text-muted-custom">No recommendations available at this time. Great job completing all active challenges!</p>
+                <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline w-100">Browse Arena</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Skills Overview -->
+    <div class="col-md-8">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4 border-bottom border-secondary pb-2">Skill Overview</h5>
+            {% if skills %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <canvas id="skillsRadarChart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        {% for skill in skills %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-white">{{ skill.skill.name }}</span>
+                                <span class="text-cyan">{{ skill.score }}%</span>
+                            </div>
+                            <div class="progress rounded-pill">
+                                <div class="progress-bar {% if skill.score >= 80 %}bg-success{% elif skill.score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ skill.score }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <p class="text-muted-custom">Complete challenges in the Cyber Arena to see your skill analytics.</p>
+                    <a href="{{ url_for('challenges.arena') }}" class="btn btn-sm btn-cyber">Enter Arena</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4 border-bottom border-secondary pb-2">Recent Activity</h5>
+            {% if recent_attempts %}
+                <div class="timeline">
+                    {% for attempt in recent_attempts %}
+                        <div class="d-flex mb-3 position-relative">
+                            <div class="me-3 mt-1">
+                                {% if attempt.is_correct %}
+                                    <i class="fas fa-check-circle text-success fs-5 bg-dark rounded-circle border border-dark"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger fs-5 bg-dark rounded-circle border border-dark"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 text-white">{{ attempt.scenario.title }}</h6>
+                                <p class="text-muted-custom small mb-0">{{ attempt.attempted_at.strftime('%b %d, %Y') }} &bull; 
+                                    {% if attempt.is_correct %}<span class="text-success">+{{ attempt.score }} XP</span>{% else %}<span class="text-danger">0 XP</span>{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted-custom text-center py-4">No recent activity.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if skills %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('skillsRadarChart').getContext('2d');
+        const labels = [{% for skill in skills %}'{{ skill.skill.name }}',{% endfor %}];
+        const data = [{% for skill in skills %}{{ skill.score }},{% endfor %}];
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Skill Proficiency',
+                    data: data,
+                    backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                    borderColor: 'rgba(6, 182, 212, 1)',
+                    pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(6, 182, 212, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: { color: '#94a3b8', font: { family: 'Inter' } },
+                        ticks: { display: false, min: 0, max: 100 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

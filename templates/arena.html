@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - Arena{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <i class="fas fa-crosshairs fa-3x text-cyan mb-3"></i>
+        <h2 class="fw-bold mb-2">The Cyber <span class="text-cyan">Arena</span></h2>
+        <p class="text-muted-custom">Select a threat category and test your defenses against realistic scenarios.</p>
+    </div>
+</div>
+
+<div class="accordion" id="categoryAccordion">
+    {% for category, scenarios in categories.items() %}
+    <div class="accordion-item bg-transparent border-0 mb-4">
+        <h2 class="accordion-header" id="heading{{ loop.index }}">
+            <button class="accordion-button glass-card text-white {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="true" aria-controls="collapse{{ loop.index }}">
+                <i class="fas fa-folder-open text-cyan me-3"></i> 
+                <span class="fw-bold fs-5">{{ category }}</span>
+                <span class="badge bg-secondary ms-3">{{ scenarios|length }} Scenarios</span>
+            </button>
+        </h2>
+        <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#categoryAccordion">
+            <div class="accordion-body px-0 pt-3 pb-0">
+                <div class="row g-4">
+                    {% for scenario in scenarios %}
+                    <div class="col-md-4">
+                        <div class="glass-card p-4 h-100 d-flex flex-column position-relative overflow-hidden">
+                            {% if scenario.id in completed_ids %}
+                                <div class="position-absolute top-0 end-0 bg-success text-white px-3 py-1" style="border-bottom-left-radius: 8px;">
+                                    <i class="fas fa-check-circle me-1"></i> Completed
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+                                <span class="badge {% if scenario.difficulty == 'Easy' %}bg-success{% elif scenario.difficulty == 'Medium' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ scenario.difficulty }}</span>
+                                <span class="text-cyan fw-bold"><i class="fas fa-star me-1"></i>{{ scenario.xp_reward }} XP</span>
+                            </div>
+                            
+                            <h5 class="fw-bold text-white mb-2">{{ scenario.title }}</h5>
+                            <p class="text-muted-custom small mb-4 flex-grow-1">{{ scenario.description }}</p>
+                            
+                            {% if scenario.id in completed_ids %}
+                                <a href="{{ url_for('challenges.challenge', scenario_id=scenario.id) }}" class="btn btn-cyber-outline w-100">Review Scenario</a>
+                            {% else %}
+                                <a href="{{ url_for('challenges.challenge', scenario_id=scenario.id) }}" class="btn btn-cyber w-100">Start Challenge</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not categories %}
+<div class="text-center py-5 glass-card">
+    <i class="fas fa-ghost fa-4x text-muted mb-3"></i>
+    <h4 class="text-muted-custom">No scenarios available in the arena yet.</h4>
+    <p class="text-muted-custom mb-0">Please check back later or contact an administrator.</p>
+</div>
+{% endif %}
+{% endblock %}

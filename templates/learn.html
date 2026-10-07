@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - Learn{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <i class="fas fa-book-open fa-3x text-cyan mb-3"></i>
+        <h2 class="fw-bold mb-2">Cybersecurity <span class="text-cyan">Curriculum</span></h2>
+        <p class="text-muted-custom">Master the concepts before you enter the Arena.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Phishing -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h4 class="fw-bold text-white mb-3"><i class="fas fa-fish text-warning me-2"></i>Phishing</h4>
+            <p class="text-muted-custom small mb-4">Phishing is a cybercrime in which a target or targets are contacted by email, telephone or text message by someone posing as a legitimate institution to lure individuals into providing sensitive data.</p>
+            
+            <h6 class="text-white text-uppercase small fw-bold">Warning Signs</h6>
+            <ul class="text-muted-custom small mb-4">
+                <li>Urgent language (e.g., "Account suspended", "Action required now")</li>
+                <li>Mismatched or spoofed sender addresses</li>
+                <li>Suspicious links (hover before clicking)</li>
+                <li>Requests for credentials or payment</li>
+            </ul>
+            
+            <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline btn-sm">Test Your Phishing Skills</a>
+        </div>
+    </div>
+    
+    <!-- Password Security -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h4 class="fw-bold text-white mb-3"><i class="fas fa-key text-success me-2"></i>Password Security</h4>
+            <p class="text-muted-custom small mb-4">Strong passwords are your first line of defense against cyber attacks. A weak password can be cracked in seconds.</p>
+            
+            <h6 class="text-white text-uppercase small fw-bold">Best Practices</h6>
+            <ul class="text-muted-custom small mb-4">
+                <li>Use passphrases (multiple words joined together)</li>
+                <li>Never reuse passwords across different accounts</li>
+                <li>Use a reputable password manager</li>
+                <li>Enable Multi-Factor Authentication (MFA)</li>
+            </ul>
+            
+            <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline btn-sm">Test Your Password Skills</a>
+        </div>
+    </div>
+    
+    <!-- Social Engineering -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h4 class="fw-bold text-white mb-3"><i class="fas fa-users text-info me-2"></i>Social Engineering</h4>
+            <p class="text-muted-custom small mb-4">The psychological manipulation of people into performing actions or divulging confidential information. It relies on human error rather than technical vulnerabilities.</p>
+            
+            <h6 class="text-white text-uppercase small fw-bold">Common Tactics</h6>
+            <ul class="text-muted-custom small mb-4">
+                <li>Pretexting: Creating a fabricated scenario (e.g., fake IT support)</li>
+                <li>Baiting: Offering something enticing to trick the victim</li>
+                <li>Quid Pro Quo: Requesting info in exchange for a service</li>
+            </ul>
+            
+            <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline btn-sm">Test Your SE Skills</a>
+        </div>
+    </div>
+    
+    <!-- Digital Payments -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h4 class="fw-bold text-white mb-3"><i class="fas fa-mobile-alt text-danger me-2"></i>Digital Payment Safety</h4>
+            <p class="text-muted-custom small mb-4">As digital payments (UPI, wallets, cards) become common, scammers invent new ways to steal money directly from your accounts.</p>
+            
+            <h6 class="text-white text-uppercase small fw-bold">Prevention Tips</h6>
+            <ul class="text-muted-custom small mb-4">
+                <li>You DO NOT need to enter your PIN to receive money</li>
+                <li>Never scan unknown QR codes to get a refund or prize</li>
+                <li>Verify the recipient's name before sending funds</li>
+            </ul>
+            
+            <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline btn-sm">Test Your Payment Safety Skills</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

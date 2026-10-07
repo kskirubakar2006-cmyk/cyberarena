@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - {{ scenario.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mb-4">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ url_for('challenges.arena') }}" class="text-muted-custom"><i class="fas fa-arrow-left me-2"></i>Back to Arena</a>
+            <div>
+                <span class="badge bg-secondary me-2">{{ scenario.category }}</span>
+                <span class="badge {% if scenario.difficulty == 'Easy' %}bg-success{% elif scenario.difficulty == 'Medium' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ scenario.difficulty }}</span>
+            </div>
+        </div>
+        
+        <!-- Challenge Card -->
+        <div class="glass-card p-0 overflow-hidden mb-4 border-0">
+            <div class="bg-dark p-4 border-bottom border-secondary d-flex justify-content-between align-items-center">
+                <h3 class="fw-bold mb-0 text-white"><i class="fas fa-biohazard text-danger me-3"></i>{{ scenario.title }}</h3>
+                <div class="timer text-cyan fs-4 fw-bold" id="timer">
+                    00:00
+                </div>
+            </div>
+            
+            <div class="p-4 p-md-5">
+                <div class="scenario-context mb-5">
+                    <h5 class="text-muted-custom mb-3 text-uppercase small fw-bold">Situation</h5>
+                    <div class="p-4 bg-dark rounded border border-secondary" style="font-size: 1.1rem; line-height: 1.6;">
+                        {{ scenario.scenario_text | safe }}
+                    </div>
+                </div>
+                
+                <h5 class="text-muted-custom mb-4 text-uppercase small fw-bold">What is your decision?</h5>
+                
+                <div class="row g-3" id="optionsContainer">
+                    {% for option in scenario.options %}
+                    <div class="col-md-6">
+                        <div class="glass-card option-card p-4 h-100 d-flex align-items-center" data-option-id="{{ option.id }}">
+                            <div class="option-marker rounded-circle bg-dark border border-secondary d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px; font-weight: bold;">
+                                {{ loop.index|string|replace('1', 'A')|replace('2', 'B')|replace('3', 'C')|replace('4', 'D') }}
+                            </div>
+                            <p class="mb-0 text-white">{{ option.option_text }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-5 text-center" id="submitAction" style="display: none;">
+                    <button id="submitBtn" class="btn btn-cyber btn-lg px-5">Submit Decision</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Result Modal (Hidden initially) -->
+        <div class="modal fade" id="resultModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content glass-card bg-dark border-0">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close btn-close-white d-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center p-5 pt-2">
+                        <div id="resultIcon" class="mb-4">
+                            <!-- Injected by JS -->
+                        </div>
+                        <h2 id="resultTitle" class="fw-bold mb-3">
+                            <!-- Injected by JS -->
+                        </h2>
+                        
+                        <div id="xpReward" class="fs-4 text-cyan fw-bold mb-4" style="display: none;">
+                            <!-- Injected by JS -->
+                        </div>
+                        
+                        <div class="bg-dark rounded p-4 border border-secondary text-start mb-4">
+                            <h6 class="text-muted-custom text-uppercase small fw-bold mb-2">Detected Threat</h6>
+                            <p class="text-danger fw-bold mb-4" id="threatType"></p>
+                            
+                            <h6 class="text-muted-custom text-uppercase small fw-bold mb-2">Analysis</h6>
+                            <p class="text-white mb-4" id="explanation"></p>
+                            
+                            <h6 class="text-muted-custom text-uppercase small fw-bold mb-2 text-cyan"><i class="fas fa-lightbulb me-2"></i>Security Tip</h6>
+                            <p class="text-white mb-0" id="securityTip"></p>
+                        </div>
+                        
+                        <a href="{{ url_for('challenges.arena') }}" class="btn btn-cyber-outline px-4 me-2">Back to Arena</a>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-cyber px-4">View Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let timerInterval;
+    let secondsElapsed = 0;
+    let selectedOptionId = null;
+    const scenarioId = {{ scenario.id }};
+    
+    // Start Timer
+    function startTimer() {
+        const timerDisplay = document.getElementById('timer');
+        timerInterval = setInterval(() => {
+            secondsElapsed++;
+            const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${mins}:${secs}`;
+        }, 1000);
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        startTimer();
+        
+        // Option selection
+        const options = document.querySelectorAll('.option-card');
+        options.forEach(opt => {
+            opt.addEventListener('click', function() {
+                // Deselect all
+                options.forEach(o => o.classList.remove('selected'));
+                // Select clicked
+                this.classList.add('selected');
+                selectedOptionId = this.dataset.optionId;
+                
+                // Show submit button
+                document.getElementById('submitAction').style.display = 'block';
+            });
+        });
+        
+        // Submit button logic
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            if (!selectedOptionId) return;
+            
+            clearInterval(timerInterval);
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Evaluating...';
+            
+            // Disable options
+            options.forEach(o => o.style.pointerEvents = 'none');
+            
+            // Send to backend
+            fetch("{{ url_for('challenges.submit_answer') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    scenario_id: scenarioId,
+                    option_id: selectedOptionId,
+                    response_time: secondsElapsed
+                })
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || `Answer submission failed (${response.status}).`);
+                }
+                showResult(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'Answer submission failed. Please try again.');
+                this.disabled = false;
+                this.textContent = 'Submit Decision';
+                options.forEach(option => option.style.pointerEvents = 'auto');
+                startTimer();
+            });
+        });
+    });
+    
+    function showResult(data) {
+        const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+        
+        const iconDiv = document.getElementById('resultIcon');
+        const titleDiv = document.getElementById('resultTitle');
+        const xpDiv = document.getElementById('xpReward');
+        
+        if (data.is_correct) {
+            iconDiv.innerHTML = '<i class="fas fa-check-circle fa-5x text-success"></i>';
+            titleDiv.textContent = 'THREAT NEUTRALIZED';
+            titleDiv.className = 'fw-bold mb-3 text-success';
+            
+            xpDiv.style.display = 'block';
+            xpDiv.innerHTML = `+${data.xp_earned} XP`;
+        } else {
+            iconDiv.innerHTML = '<i class="fas fa-times-circle fa-5x text-danger"></i>';
+            titleDiv.textContent = 'SYSTEM COMPROMISED';
+            titleDiv.className = 'fw-bold mb-3 text-danger';
+            xpDiv.style.display = 'none';
+        }
+        
+        document.getElementById('threatType').textContent = data.threat_type;
+        document.getElementById('explanation').textContent = data.explanation;
+        document.getElementById('securityTip').textContent = data.security_tip;
+        
+        modal.show();
+    }
+</script>
+{% endblock %}

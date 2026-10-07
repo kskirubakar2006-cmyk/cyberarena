@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}CyberArena - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0">Admin <span class="text-danger">Dashboard</span></h2>
+        <p class="text-muted-custom">Platform management and analytics.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center border-top border-4 border-cyan">
+            <h1 class="display-4 fw-bold text-white mb-0">{{ users_count }}</h1>
+            <p class="text-muted-custom text-uppercase small mb-0">Total Students</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center border-top border-4 border-warning">
+            <h1 class="display-4 fw-bold text-white mb-0">{{ scenarios_count }}</h1>
+            <p class="text-muted-custom text-uppercase small mb-0">Active Scenarios</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center border-top border-4 border-success">
+            <h1 class="display-4 fw-bold text-white mb-0">{{ attempts_count }}</h1>
+            <p class="text-muted-custom text-uppercase small mb-0">Total Training Attempts</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4">Quick Actions</h5>
+            <div class="d-grid gap-3">
+                <a href="{{ url_for('admin.users') }}" class="btn btn-cyber-outline text-start p-3">
+                    <i class="fas fa-users fa-fw me-2"></i> Manage Users
+                </a>
+                <a href="{{ url_for('admin.scenarios') }}" class="btn btn-cyber-outline text-start p-3">
+                    <i class="fas fa-file-alt fa-fw me-2"></i> Manage Scenarios
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4">System Status</h5>
+            <ul class="list-group list-group-flush bg-transparent">
+                <li class="list-group-item bg-transparent text-white border-secondary px-0 d-flex justify-content-between align-items-center">
+                    Database Connection
+                    <span class="badge bg-success rounded-pill">Online</span>
+                </li>
+                <li class="list-group-item bg-transparent text-white border-secondary px-0 d-flex justify-content-between align-items-center">
+                    Scoring Engine
+                    <span class="badge bg-success rounded-pill">Active</span>
+                </li>
+                <li class="list-group-item bg-transparent text-white border-secondary px-0 d-flex justify-content-between align-items-center">
+                    Latest Backup
+                    <span class="text-muted-custom small">Today</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
